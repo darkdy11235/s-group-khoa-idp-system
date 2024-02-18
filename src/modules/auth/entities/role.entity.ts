@@ -1,4 +1,4 @@
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
   Entity,
@@ -14,7 +14,7 @@ import { Permission } from './permission.entity';
 })
 export class Role {
   @PrimaryGeneratedColumn('increment')
-  id: string;
+  id: number;
 
   @Column({
     name: 'name',

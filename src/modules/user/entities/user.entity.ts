@@ -1,4 +1,4 @@
-import { Role } from 'src/auth/entities/role.entity';
+import { Role } from 'src/modules/auth/entities/role.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,12 +8,13 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  BaseEntity
 } from 'typeorm';
 
 @Entity({
   name: 'users',
 })
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -41,7 +42,7 @@ export class User {
   @Column({
     name: 'password',
     type: 'varchar',
-    nullable: true,
+    nullable: false,
   })
   password: string;
 
