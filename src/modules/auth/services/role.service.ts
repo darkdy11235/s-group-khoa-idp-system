@@ -2,12 +2,14 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from '../entities/role.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
 @Injectable()
 export class RoleService {
 	constructor(
 		@InjectRepository(Role)
-		private readonly roleRepository: Repository<Role>
+		private readonly roleRepository: Repository<Role>,
+        private readonly userRepository: Repository<User>
 	) {}
 	async create(createRoleDto: CreateRoleDto) {
 		// check if the role already exists
@@ -23,12 +25,8 @@ export class RoleService {
         return await this.roleRepository.find();
     }
 
-    async findOne(id: number) {
-        const role = await this.roleRepository.findOne({ where: { id } });
-        if (!role) {
-            throw new NotFoundException('Role not found');
-        }
-        return role;
+    async findById(id: number) {
+        return await this.roleRepository.findOne({ where: { id } });
     }
 
     async update(id: number, updateRoleDto: CreateRoleDto) {
@@ -54,5 +52,19 @@ export class RoleService {
             .where('role.id IN (:...roleIds)', { roleIds })
             .getMany();
         return permissions.map(permission => permission.name);
+    }
+
+    async assignRolesToUser(userId: string, roleIds : number[]) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        const roles = await Promise.all(roleIds.map(roleId => this.roleRepository.findOne({ where: { id: roleId } })));
+        user.roles = roles;
+        return await this.userRepository.save(user);
+    }
+
+    async removeRolesFromUser(userId: string, roleIds : number[]) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        const roles = await Promise.all(roleIds.map(roleId => this.roleRepository.findOne({ where: { id: roleId } })));
+        user.roles = user.roles.filter(role => !roles.includes(role));
+        return await this.userRepository.save(user);
     }
 }

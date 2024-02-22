@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, HttpCode, Post, UseGuards, SetMetadata, Patch, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Param, HttpCode, Post, Delete, UseGuards, SetMetadata, Patch, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -8,7 +8,16 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @ApiTags('User Management')
 @Controller('user')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) {} 
+
+    @Post()
+    @HttpCode(200)
+    @SetMetadata('permissions', ['create:users'])
+    @UseGuards( PermissionsGuard)
+    @ApiBearerAuth('JWT-auth')
+    async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+        return await this.userService.create(createUserDto);
+    }
 
     @Get()
     @HttpCode(200)
@@ -17,15 +26,6 @@ export class UserController {
     @ApiBearerAuth('JWT-auth')
     async find(): Promise<User[]> {
         return await this.userService.find();
-    } 
-
-    @Post()
-    @HttpCode(200)
-    @SetMetadata('permissions', ['create:users'])
-    @UseGuards( PermissionsGuard)
-    @ApiBearerAuth('JWT-auth')
-    async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
-        return await this.userService.createUser(createUserDto);
     }
 
     @Patch(':id')
@@ -34,6 +34,22 @@ export class UserController {
     @UseGuards( PermissionsGuard)
     @ApiBearerAuth('JWT-auth')
     async updateUser(@Param('id') id: string, @Body() updateUserDto: CreateUserDto): Promise<User> {
-        return await this.userService.updateUser(id, updateUserDto);
+        return await this.userService.update(id, updateUserDto);
+    }
+
+    @Delete(':id')
+    @HttpCode(200)
+    @SetMetadata('permissions', ['delete:users'])
+    @UseGuards( PermissionsGuard)
+    @ApiBearerAuth('JWT-auth')
+    async removeUser(@Param('id') id: string): Promise<any> {
+        return await this.userService.delete(id);
+    }
+
+    @Get('profile')
+    @HttpCode(200)
+    @ApiBearerAuth('JWT-auth')
+    async profile(): Promise<any> {
+        return await this.userService.profile();
     }
 }

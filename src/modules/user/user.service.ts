@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 export class UserService {
     constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
 
-    async createUser(createUserDto: CreateUserDto) {
+    async create(createUserDto: CreateUserDto) {
         // check if the user already exists
         const userExists = await this.userRepository.findOne({ where: { username: createUserDto.username } });
         if (userExists) {
@@ -51,7 +51,7 @@ export class UserService {
         return user.roles;
     }
 
-    async updateUser(userId: string, updateUserDto: CreateUserDto) {
+    async update(userId: string, updateUserDto: CreateUserDto) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user) {
             throw new NotFoundException('User not found');
@@ -59,7 +59,7 @@ export class UserService {
         return await this.userRepository.save({ ...user, ...updateUserDto });
     }
 
-    async deleteUser(userId: string) {
+    async delete(userId: string) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user) {
             throw new NotFoundException('User not found');
@@ -67,4 +67,21 @@ export class UserService {
         return await this.userRepository.remove(user);
     }
 
+    async profile(userId: string) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        const { password, ...result } = user;
+        return result;
+    }
+
+    async getUserPermissions(userId: string) {
+        const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['roles'] });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        const permissions = user.roles.map(role => role.permissions).flat();
+        return permissions.map(permission => permission.name);
+    }
 }
