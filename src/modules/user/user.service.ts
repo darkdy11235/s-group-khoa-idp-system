@@ -15,24 +15,24 @@ export class UserService {
         if (userExists) {
             throw new ConflictException('User already exists');
         }
-        // hash the password
-        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-        
-        // create the user
-        const user = this.userRepository.create({ ...createUserDto, password: hashedPassword });
-        return await this.userRepository.save(user);
+        return await this.userRepository.save(createUserDto);
     }
 
     async find() {
         return await this.userRepository.find();
     }
 
-    async findByUsername(username: string) {
-        const user = await this.userRepository.findOne({ where: { username } });
+    async findById(id: string) {
+        const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
             throw new NotFoundException('User not found');
         }
         return user;
+    }
+
+    async findByUsername(username: string) {
+        const user = await this.userRepository.findOne({ where: { username } });
+        return user ? user : null;
     }
 
     async findByEmail(email: string) {

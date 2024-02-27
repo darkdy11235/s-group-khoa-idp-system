@@ -2,14 +2,16 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from '../entities/role.entity';
-import { User } from 'src/modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { UserService } from 'src/modules/user/user.service';
 @Injectable()
 export class RoleService {
 	constructor(
 		@InjectRepository(Role)
 		private readonly roleRepository: Repository<Role>,
-        private readonly userRepository: Repository<User>
+
+        // inject the UserService
+        private readonly userService: UserService,
 	) {}
 	async create(createRoleDto: CreateRoleDto) {
 		// check if the role already exists
@@ -55,16 +57,15 @@ export class RoleService {
     }
 
     async assignRolesToUser(userId: string, roleIds : number[]) {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
+        const user = await this.userService.findById(userId);
         const roles = await Promise.all(roleIds.map(roleId => this.roleRepository.findOne({ where: { id: roleId } })));
         user.roles = roles;
-        return await this.userRepository.save(user);
+        return await this.userService.update(userId, user as any);
     }
 
     async removeRolesFromUser(userId: string, roleIds : number[]) {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        const roles = await Promise.all(roleIds.map(roleId => this.roleRepository.findOne({ where: { id: roleId } })));
-        user.roles = user.roles.filter(role => !roles.includes(role));
-        return await this.userRepository.save(user);
+        const user = await this.userService.findById(userId);
+        user.roles = user.roles.filter(role => !roleIds.includes(role.id));
+        return await this.userService.update(userId, user as any);
     }
 }

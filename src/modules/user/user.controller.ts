@@ -19,11 +19,8 @@ export class UserController {
         return await this.userService.create(createUserDto);
     }
 
-    @Get()
+    @Get('users')
     @HttpCode(200)
-    @SetMetadata('permissions', ['read:users'])
-    @UseGuards( PermissionsGuard)
-    @ApiBearerAuth('JWT-auth')
     async find(): Promise<User[]> {
         return await this.userService.find();
     }
@@ -48,8 +45,10 @@ export class UserController {
 
     @Get('profile')
     @HttpCode(200)
+    @SetMetadata('permissions', ['read:profile'])
+    @UseGuards( PermissionsGuard)
     @ApiBearerAuth('JWT-auth')
     async profile(): Promise<any> {
-        return await this.userService.profile();
+        return { message: 'Profile' };
     }
 }

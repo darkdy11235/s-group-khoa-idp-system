@@ -26,8 +26,6 @@ export class AuthController {
         return await this.authService.register(createUserDto);
     }
 
-
-
     @Get('logout')
     @HttpCode(200)
     async logout(): Promise<any> {

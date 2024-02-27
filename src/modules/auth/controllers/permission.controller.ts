@@ -16,7 +16,7 @@ export class PermissionController {
   @ApiBearerAuth()
   @ApiOkResponse({ description: 'List of permissions', type: [Permission] })
   async getPermissions(): Promise<Permission[]> {
-    return this.permissionService.getPermissions();
+    return this.permissionService.find();
   }
 
   @Post('permissions')
@@ -24,6 +24,6 @@ export class PermissionController {
   @ApiBearerAuth()
   @ApiCreatedResponse({ description: 'Permission created', type: Permission })
   async createPermission(@Body() createPermissionDto: CreatePermissionDto): Promise<Permission> {
-    return this.permissionService.createPermission(createPermissionDto);
+    return this.permissionService.create(createPermissionDto);
   }
 }

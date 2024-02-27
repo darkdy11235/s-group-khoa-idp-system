@@ -18,22 +18,39 @@ export class AuthService {
 
 async register(createUserDto: any): Promise<any> {
     const user = await this.UserService.findByUsername(createUserDto.username);
+    console.log(createUserDto);
     if (user) {
-        throw new NotAcceptableException('Username already taken');
+        throw new NotAcceptableException('Username already exists');
     }
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
-    createUserDto.password = hashedPassword;
-    return await this.UserService.create(createUserDto);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    bcrypt.compare('testpassword', hashedPassword, function(err, result) {
+        if (err) { console.log ('error' + err); }
+        console.log('compare passs  register' + hashedPassword);
+        console.log('compare passs ' + result);
+    });
+    const newUser = await this.UserService.create({ ...createUserDto, password: hashedPassword });
+    return newUser;
 }
 
 async login(loginDto: LoginDto): Promise<any> {
     const user = await this.validateUser(loginDto.username, loginDto.password);
+    console.log('user', user);
     const payload: AuthPayload = { 
         id: user.id,
         name: user.username,
         email: user.email,
         permissions: await this.UserService.getUserPermissions(user.id),
+    };
+    console.log('payload', payload);
+    return await this.jwtService.signAsync(payload);
+}
+
+async logout(): Promise<any> {
+    const payload: AuthPayload = {
+        id: 0,
+        name: 'guest',
+        email: 'guest',
+        permissions: [],
     };
     return await this.jwtService.signAsync(payload);
 }
@@ -43,10 +60,23 @@ async login(loginDto: LoginDto): Promise<any> {
         if (!user) {
             throw new NotFoundException('User not found');
         }
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
+
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
+
         return user;
 	}
+
+    async refreshToken(): Promise<any> {
+        const payload: AuthPayload = {
+            id: 0,
+            name: 'guest',
+            email: 'guest',
+            permissions: [],
+        };
+        return await this.jwtService.signAsync(payload);
+    }
 }
