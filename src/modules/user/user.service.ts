@@ -1,12 +1,17 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { Role } from '../auth/entities/role.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
-    constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
+    constructor(
+    @InjectRepository(User) 
+    private userRepository: Repository<User>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>) { }
 
     async create(createUserDto: CreateUserDto) {
         // check if the user already exists
@@ -76,11 +81,42 @@ export class UserService {
     }
 
     async getUserPermissions(userId: string) {
-        const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['roles'] });
-        if (!user) {
+        try {
+            // Find the user by userId along with their roles
+            const user = await this.userRepository.findOne({ 
+                where: { id: userId }, 
+                relations: ['roles'] 
+            });
+
+            // Throw NotFoundException if user is not found
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            // Extract role ids from user's roles
+            const roleIds = user.roles.map(role => role.id);
+
+            // Fetch permissions associated with each role
+            const permissions = await Promise.all(
+                roleIds.map(async roleId => {
+                    const role = await this.roleRepository.findOne({
+                        where: { id: roleId },
+                        relations: ['permissions']
+                    });
+                    return role.permissions.map(permission => permission.name);
+                }
+            ));
+
+            // Flatten the permissions array
+            const userPermissions = permissions.flat();
+            console.log('User permissions:', userPermissions);
+            // Return the user's permissions
+            return userPermissions;
+        } catch (error) {
+            // Catch and handle any errors
+            console.error('Error fetching user permissions:', error);
             throw new NotFoundException('User not found');
         }
-        const permissions = user.roles.map(role => role.permissions).flat();
-        return permissions.map(permission => permission.name);
     }
+
 }

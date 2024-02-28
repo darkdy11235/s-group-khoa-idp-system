@@ -18,30 +18,22 @@ export class AuthService {
 
 async register(createUserDto: any): Promise<any> {
     const user = await this.UserService.findByUsername(createUserDto.username);
-    console.log(createUserDto);
     if (user) {
         throw new NotAcceptableException('Username already exists');
     }
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    bcrypt.compare('testpassword', hashedPassword, function(err, result) {
-        if (err) { console.log ('error' + err); }
-        console.log('compare passs  register' + hashedPassword);
-        console.log('compare passs ' + result);
-    });
     const newUser = await this.UserService.create({ ...createUserDto, password: hashedPassword });
     return newUser;
 }
 
 async login(loginDto: LoginDto): Promise<any> {
     const user = await this.validateUser(loginDto.username, loginDto.password);
-    console.log('user', user);
     const payload: AuthPayload = { 
         id: user.id,
         name: user.username,
         email: user.email,
-        permissions: await this.UserService.getUserPermissions(user.id),
+        permissions: this.UserService.getUserPermissions(user.id).toString().split(','),
     };
-    console.log('payload', payload);
     return await this.jwtService.signAsync(payload);
 }
 

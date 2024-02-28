@@ -49,7 +49,7 @@ export class SeedRoles1709102902136 implements MigrationInterface {
           },
         ]);
         const roleNameToPermissionNames = {
-            [SystemRoles.CHAIRMAN]: [AccessRights.VIEW_ACCESS_RIGHTS],
+            [SystemRoles.CHAIRMAN]: [AccessRights.VIEW_ACCESS_RIGHTS, AccessRights.EDIT_ACCESS_RIGHTS, AccessRights.VIEW_USERS, AccessRights.EDIT_MEMBER_USER],
             [SystemRoles.DOMAIN_CHIEF]: [AccessRights.VIEW_USERS, AccessRights.EDIT_MEMBER_USER],
             [SystemRoles.DOMAIN_LEADER]: [AccessRights.VIEW_USERS, AccessRights.EDIT_MEMBER_USER],
             [SystemRoles.MEMBER]: [],
