@@ -16,44 +16,38 @@ export class AuthService {
         private readonly RoleService: RoleService,
 	) {}
 
-async register(createUserDto: any): Promise<any> {
-    const user = await this.UserService.findByUsername(createUserDto.username);
-    if (user) {
-        throw new NotAcceptableException('Username already exists');
+    async register(createUserDto: any): Promise<any> {
+        const user = await this.UserService.findByUsername(createUserDto.username);
+        if (user) {
+            throw new NotAcceptableException('Username already exists');
+        }
+        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+        const newUser = await this.UserService.create({ ...createUserDto, password: hashedPassword });
+        return newUser;
     }
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const newUser = await this.UserService.create({ ...createUserDto, password: hashedPassword });
-    return newUser;
-}
 
-async login(loginDto: LoginDto): Promise<any> {
-    const user = await this.validateUser(loginDto.username, loginDto.password);
-    const payload: AuthPayload = { 
-        id: user.id,
-        name: user.username,
-        email: user.email,
-        permissions: this.UserService.getUserPermissions(user.id).toString().split(','),
-    };
-    return await this.jwtService.signAsync(payload);
-}
+    async login(loginDto: LoginDto): Promise<{access_token: string}> {
+        const user = await this.validateUser(loginDto);
+        const payload: AuthPayload = { 
+            id: user.id
+        };
+        return { access_token: await this.jwtService.signAsync(payload) };
+    }
 
-async logout(): Promise<any> {
-    const payload: AuthPayload = {
-        id: 0,
-        name: 'guest',
-        email: 'guest',
-        permissions: [],
-    };
-    return await this.jwtService.signAsync(payload);
-}
+    async logout(): Promise<any> {
+        const payload: AuthPayload = {
+            id: 0
+        };
+        return await this.jwtService.signAsync(payload);
+    }
 
-	async validateUser(username: string, password: string): Promise<any> {
-		const user = await this.UserService.findByUsername(username);
+	async validateUser(loginDto: LoginDto): Promise<any> {
+		const user = await this.UserService.findByUsername(loginDto.username);
         if (!user) {
             throw new NotFoundException('User not found');
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
 
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
@@ -61,14 +55,4 @@ async logout(): Promise<any> {
 
         return user;
 	}
-
-    async refreshToken(): Promise<any> {
-        const payload: AuthPayload = {
-            id: 0,
-            name: 'guest',
-            email: 'guest',
-            permissions: [],
-        };
-        return await this.jwtService.signAsync(payload);
-    }
 }

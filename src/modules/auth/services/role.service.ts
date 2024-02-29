@@ -2,8 +2,11 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from '../entities/role.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { UserService } from 'src/modules/user/user.service';
+import { AssignRolesToUserDto } from '../dto/assign-roles-to-user.dto';
+import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
+
 @Injectable()
 export class RoleService {
 	constructor(
@@ -47,25 +50,33 @@ export class RoleService {
         return await this.roleRepository.remove(role);
     }
 
-    async getRolePermissions(roles : Role[]) {
-        const roleIds = roles.map(role => role.id);
-        const permissions = await this.roleRepository.createQueryBuilder('role')
-            .leftJoinAndSelect('role.permissions', 'permission')
-            .where('role.id IN (:...roleIds)', { roleIds })
-            .getMany();
-        return permissions.map(permission => permission.name);
+    async getRolePermissions(id: number) {
+        const role = await this.roleRepository.findOne({ where: { id }, relations: ['permissions'] });
+        return role.permissions;
     }
 
-    async assignRolesToUser(userId: string, roleIds : number[]) {
-        const user = await this.userService.findById(userId);
-        const roles = await Promise.all(roleIds.map(roleId => this.roleRepository.findOne({ where: { id: roleId } })));
-        user.roles = roles;
-        return await this.userService.update(userId, user as any);
+    async assignRolesToUser(assignRolesToUserDto: AssignRolesToUserDto) {
+        const user = await this.userService.findById(assignRolesToUserDto.userId);
+        // get user roles
+        const userRoles = await this.userService.getUserRoles(user.id);
+        // get new roles
+        const roles = await this.roleRepository.findBy({ id: In(assignRolesToUserDto.roleIds) });
+        // add new roles to the user
+        user.roles = [...userRoles, ...roles];
+        return await this.userService.update(assignRolesToUserDto.userId, user as any);
     }
 
-    async removeRolesFromUser(userId: string, roleIds : number[]) {
-        const user = await this.userService.findById(userId);
-        user.roles = user.roles.filter(role => !roleIds.includes(role.id));
-        return await this.userService.update(userId, user as any);
+    async removeRolesFromUser(removeRolesFromUserDto: AssignRolesToUserDto) {
+        const user = await this.userService.findById(removeRolesFromUserDto.userId);
+        // get user roles
+        const userRoles = await this.userService.getUserRoles(user.id);
+        // get roles to remove
+        const roles = await this.roleRepository.findBy({ id: In(removeRolesFromUserDto.roleIds) });
+        // remove roles in userRoles that are in roles
+        user.roles = userRoles.filter(userRole => !roles.some(role => role.name === userRole.name));
+        const updatedUser = await this.userService.update(removeRolesFromUserDto.userId, user as any);
+        // return the user without the password
+        const { password, ...result } = updatedUser;
+        return result;
     }
 }

@@ -23,7 +23,8 @@ export class UserService {
     }
 
     async find() {
-        return await this.userRepository.find();
+        const users = await this.userRepository.find();
+        return users.map(({ password, ...result }) => result);
     }
 
     async findById(id: string) {
@@ -109,7 +110,6 @@ export class UserService {
 
             // Flatten the permissions array
             const userPermissions = permissions.flat();
-            console.log('User permissions:', userPermissions);
             // Return the user's permissions
             return userPermissions;
         } catch (error) {

@@ -1,6 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { SystemRoles } from 'src/database/enums/system-roles.enum';
 import { UserService } from 'src/modules/user/user.service';
 import { RoleService } from 'src/modules/auth/services/role.service';
 
@@ -20,16 +19,16 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
+    // check has user
     const request = context.switchToHttp().getRequest();
-    const userId = request.user.id;
-
-    // Retrieve user's roles and permissions
-    const userRoles = await this.userService.getUserRoles(userId);
-    const userPermissions = await this.roleService.getRolePermissions(userRoles);
-
-    // Check if the user has the required permissions
-    const hasPermission = requiredPermissions.every(permission => userPermissions.includes(permission));
-
+    const user = request.user;
+    if (!user) {
+      throw new ForbiddenException('Unauthorized');
+    }
+    // check has role
+    const userPermissions = await this.userService.getUserPermissions(user.id);
+    
+    const hasPermission = requiredPermissions.every((permission) => userPermissions.includes(permission));
     if (!hasPermission) {
       throw new ForbiddenException('Insufficient permissions');
     }

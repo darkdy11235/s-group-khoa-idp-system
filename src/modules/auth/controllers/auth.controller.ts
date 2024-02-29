@@ -4,6 +4,7 @@ import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { LoginDto } from '../dto/login.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../guards/auth.guard';
 
 @ApiTags('Authentications')
 @Controller('auth')
@@ -28,13 +29,8 @@ export class AuthController {
 
     @Get('logout')
     @HttpCode(200)
+    @UseGuards( AuthGuard)
     async logout(): Promise<any> {
         return await this.authService.logout();
-    }
-
-    @Get('refresh-token')
-    @HttpCode(200)
-    async refreshToken(): Promise<any> {
-        return await this.authService.refreshToken();
     }
 }
