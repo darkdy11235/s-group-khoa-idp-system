@@ -7,8 +7,7 @@ import { RoleService } from 'src/modules/auth/services/role.service';
 export class PermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private userService: UserService,
-    private roleService: RoleService,
+    private userService: UserService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -27,7 +26,7 @@ export class PermissionsGuard implements CanActivate {
     }
     // check has role
     const userPermissions = await this.userService.getUserPermissions(user.id);
-    
+
     const hasPermission = requiredPermissions.every((permission) => userPermissions.includes(permission));
     if (!hasPermission) {
       throw new ForbiddenException('Insufficient permissions');
