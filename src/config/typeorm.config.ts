@@ -10,7 +10,8 @@ export default registerAs('database', () => ({
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
     synchronize: process.env.NODE_ENV === 'development',
     logging: process.env.NODE_ENV === 'development',
-    migrationsRun : true,
-    migrationsTableName: 'migrations',
-    migrations: [__dirname + '/../migrations/*.{js,ts}', __dirname + '/../**/seeders/*.{js,ts}'],
+    // migrationsRun : true,
+    // migrationsTableName: 'migrations',
+    // migrations: [__dirname + '/../**/seeders/*.{js,ts}'],
+    // migrations: [__dirname + '/../migrations/*.{js,ts}', __dirname + '/../**/seeders/*.{js,ts}'],
 }));

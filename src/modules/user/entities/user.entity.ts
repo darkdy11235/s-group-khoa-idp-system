@@ -10,7 +10,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  BaseEntity
+  BaseEntity,
 } from 'typeorm';
 
 @Entity({
@@ -88,8 +88,8 @@ export class User extends BaseEntity {
     },
   })
   roles?: Role[];
-    name: any;
-  
-  @OneToMany(() => Client, client => client.user)
+  name: any;
+
+  @OneToMany(() => Client, (client) => client.user)
   clients: Client[];
 }

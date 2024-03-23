@@ -13,14 +13,16 @@ import { jwtConstants } from 'src/config/jwt.config';
 import { User } from 'src/modules/user/entities/user.entity';
 import { RoleService } from '../services/role.service';
 @Module({
-  imports: [TypeOrmModule.forFeature([Role, Permission, User]), JwtModule.register({
-    global: true,
-    secret: jwtConstants.secret,
-    signOptions: { expiresIn: jwtConstants.expiresIn },
-  }),
-  RoleModule,
-  PermissionModule
-],
+  imports: [
+    TypeOrmModule.forFeature([Role, Permission, User]),
+    JwtModule.register({
+      global: true,
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: jwtConstants.expiresIn },
+    }),
+    RoleModule,
+    PermissionModule,
+  ],
   controllers: [AuthController],
   providers: [AuthService, PermissionService, UserService, RoleService],
 })

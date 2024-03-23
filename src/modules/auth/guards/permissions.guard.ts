@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserService } from 'src/modules/user/user.service';
 import { RoleService } from 'src/modules/auth/services/role.service';
@@ -7,12 +12,15 @@ import { RoleService } from 'src/modules/auth/services/role.service';
 export class PermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions = this.reflector.get<string[]>('permissions', context.getHandler());
-    
+    const requiredPermissions = this.reflector.get<string[]>(
+      'permissions',
+      context.getHandler(),
+    );
+
     if (!requiredPermissions) {
       // No permissions are required, so access is allowed
       return true;
@@ -27,7 +35,9 @@ export class PermissionsGuard implements CanActivate {
     // check has role
     const userPermissions = await this.userService.getUserPermissions(user.id);
 
-    const hasPermission = requiredPermissions.every((permission) => userPermissions.includes(permission));
+    const hasPermission = requiredPermissions.every((permission) =>
+      userPermissions.includes(permission),
+    );
     if (!hasPermission) {
       throw new ForbiddenException('Insufficient permissions');
     }

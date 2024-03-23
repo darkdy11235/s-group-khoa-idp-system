@@ -50,28 +50,51 @@ export class PermissionService {
     return await this.permissionRepository.remove(permission);
   }
 
-  async assignPermissionsToRole(assignPermissionsToRoleDto: AssignPermissionsToRoleDto) {
-    const role = await this.roleService.findById(assignPermissionsToRoleDto.roleId);
+  async assignPermissionsToRole(
+    assignPermissionsToRoleDto: AssignPermissionsToRoleDto,
+  ) {
+    const role = await this.roleService.findById(
+      assignPermissionsToRoleDto.roleId,
+    );
     // get role permissions
     const rolePermissions = await this.roleService.getRolePermissions(role.id);
     // get new permissions
-    const permissions = await this.permissionRepository.findBy({ id: In(assignPermissionsToRoleDto.permissionIds) });
+    const permissions = await this.permissionRepository.findBy({
+      id: In(assignPermissionsToRoleDto.permissionIds),
+    });
     // add new permissions to the role
     role.permissions = [...rolePermissions, ...permissions];
-    return await this.roleService.update(assignPermissionsToRoleDto.roleId, role);
+    return await this.roleService.update(
+      assignPermissionsToRoleDto.roleId,
+      role,
+    );
   }
 
-  async removePermissionsFromRole(removePermissionsFromRoleDto: AssignPermissionsToRoleDto) {
-    const role = await this.roleService.findById(removePermissionsFromRoleDto.roleId);
+  async removePermissionsFromRole(
+    removePermissionsFromRoleDto: AssignPermissionsToRoleDto,
+  ) {
+    const role = await this.roleService.findById(
+      removePermissionsFromRoleDto.roleId,
+    );
     // get role permissions
     const rolePermissions = await this.roleService.getRolePermissions(role.id);
     console.log(rolePermissions);
     // get permissions to remove
-    const permissions = await this.permissionRepository.findBy({ id: In(removePermissionsFromRoleDto.permissionIds) });
+    const permissions = await this.permissionRepository.findBy({
+      id: In(removePermissionsFromRoleDto.permissionIds),
+    });
     console.log(permissions);
     // remove permission in rolePermissions that are in permissions
-    role.permissions = rolePermissions.filter(rolePermission => !permissions.some(permission => permission.name === rolePermission.name));
-    console.log(role.permissions); 
-    return await this.roleService.update(removePermissionsFromRoleDto.roleId, role);
+    role.permissions = rolePermissions.filter(
+      (rolePermission) =>
+        !permissions.some(
+          (permission) => permission.name === rolePermission.name,
+        ),
+    );
+    console.log(role.permissions);
+    return await this.roleService.update(
+      removePermissionsFromRoleDto.roleId,
+      role,
+    );
   }
 }

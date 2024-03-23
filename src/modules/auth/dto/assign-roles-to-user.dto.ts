@@ -1,8 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AssignRolesToUserDto {
-    @ApiProperty()
-    userId: string;
-    @ApiProperty()
-    roleIds: number[];
+  @ApiProperty()
+  userId: string;
+  @ApiProperty()
+  roleIds: number[];
 }

@@ -1,3 +1,3 @@
 export interface AuthPayload {
-    id: number | string;
+  id: number | string;
 }

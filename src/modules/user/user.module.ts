@@ -7,10 +7,7 @@ import { Role } from '../auth/entities/role.entity';
 import { AuthModule } from '../auth/modules/auth.module';
 import { RoleService } from '../auth/services/role.service';
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Role]),
-    AuthModule
-  ],
+  imports: [TypeOrmModule.forFeature([User, Role]), AuthModule],
   controllers: [UserController],
   providers: [UserService, RoleService],
 })

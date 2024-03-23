@@ -1,6 +1,8 @@
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
@@ -8,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Permission } from './permission.entity';
+import { Delete } from '@nestjs/common';
 
 @Entity({
   name: 'roles',
@@ -31,17 +34,20 @@ export class Role {
   })
   description: string;
 
+  @CreateDateColumn({
+    name: 'created_at',
+  })
+  createdAt: Date;
+
   @UpdateDateColumn({
     name: 'updated_at',
   })
   updatedAt: Date;
 
-  @Column({
-    name: 'is_editable',
-    type: 'boolean',
-    default: true,
+  @DeleteDateColumn({
+    name: 'deleted_at',
   })
-  isEditable: boolean;
+  deletedAt: Date;
 
   @ManyToMany(() => User, (user) => user.roles)
   @JoinTable({

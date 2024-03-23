@@ -2,6 +2,7 @@ import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -12,8 +13,8 @@ import {
   name: 'clients',
 })
 export class Client {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({
     name: 'name',
@@ -29,25 +30,23 @@ export class Client {
   })
   description: string;
 
-    @Column({
-        name: 'client_secret',
-        type: 'varchar',
-        nullable: false,
-    })
-    clientSecret: string;
+  @Column({
+    name: 'client_secret',
+    type: 'varchar',
+    nullable: false,
+  })
+  clientSecret: string;
 
-    @Column({ type: 'varchar', array: true, nullable: true })
-    redirect_uris: string[];
-  
-    @Column()
-    user_id: string;
+  @Column({ type: 'varchar', array: true, nullable: true })
+  redirect_uris: string[];
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   updated_at: Date;
-    
-  @ManyToOne(() => User, user => user.clients)
+
+  @ManyToOne(() => User, (user) => user.clients)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 }
