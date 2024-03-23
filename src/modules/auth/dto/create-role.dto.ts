@@ -6,13 +6,13 @@ export class CreateRoleDto {
     description: 'Role name',
     example: 'CHAIRMAN',
   })
-    @IsNotEmpty()
-    name: string;
+  @IsNotEmpty()
+  name: string;
 
-    @ApiProperty({
-        description: 'Role description',
-        example: 'This is the chairman role',
-    })
-    @IsNotEmpty()
-    description: string;
+  @ApiProperty({
+    description: 'Role description',
+    example: 'This is the chairman role',
+  })
+  @IsNotEmpty()
+  description: string;
 }

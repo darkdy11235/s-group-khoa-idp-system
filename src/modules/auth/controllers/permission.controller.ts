@@ -1,29 +1,77 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  UseGuards,
+  SetMetadata,
+  Param,
+} from '@nestjs/common';
 import { PermissionService } from '../services/permission.service';
+import { Auth } from '../decorators/auth.decorator';
 import { Permission } from '../entities/permission.entity';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { RolesGuard } from '../guards/roles.guard';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { PermissionsGuard } from '../guards/permissions.guard';
+import { AssignPermissionsToRoleDto } from '../dto/assign-permissions-to-role.dto';
 
-
-@Controller('permissions')
+@Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
   @Get('permissions')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOkResponse({ description: 'List of permissions', type: [Permission] })
+  @Auth('View access rights')
   async getPermissions(): Promise<Permission[]> {
     return this.permissionService.find();
   }
 
-  @Post('permissions')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
-  @ApiCreatedResponse({ description: 'Permission created', type: Permission })
-  async createPermission(@Body() createPermissionDto: CreatePermissionDto): Promise<Permission> {
+  @Post('')
+  @Auth('Edit access rights')
+  async createPermission(
+    @Body() createPermissionDto: CreatePermissionDto,
+  ): Promise<Permission> {
     return this.permissionService.create(createPermissionDto);
+  }
+
+  @Post('assign-permissions-to-role')
+  @Auth('Edit access rights')
+  async assignPermissionsToRole(
+    @Body() assignPermissionsToRoleDto: AssignPermissionsToRoleDto,
+  ): Promise<any> {
+    return this.permissionService.assignPermissionsToRole(
+      assignPermissionsToRoleDto,
+    );
+  }
+
+  @Post('remove-permissions-from-role')
+  @Auth('Edit access rights')
+  async removePermissionsFromRole(
+    @Body() removePermissionsFromRoleDto: AssignPermissionsToRoleDto,
+  ): Promise<any> {
+    return this.permissionService.removePermissionsFromRole(
+      removePermissionsFromRoleDto,
+    );
+  }
+
+  @Delete('/:id')
+  @Auth('Edit access rights')
+  async removePermission(@Param('id') id: number): Promise<any> {
+    return this.permissionService.remove(id);
+  }
+
+  @Get('/:id')
+  @Auth('View access rights')
+  async getPermission(@Param('id') id: number): Promise<Permission> {
+    return this.permissionService.findById(id);
+  }
+
+  @Patch('/:id')
+  @Auth('Edit access rights')
+  async updatePermission(
+    @Param('id') id: number,
+    @Body() updatePermissionDto: CreatePermissionDto,
+  ): Promise<Permission> {
+    return this.permissionService.update(id, updatePermissionDto);
   }
 }

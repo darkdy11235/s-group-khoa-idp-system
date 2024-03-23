@@ -1,4 +1,5 @@
 import { Role } from 'src/modules/auth/entities/role.entity';
+import { Client } from 'src/modules/client/entities/client.entity';
 import {
   Column,
   CreateDateColumn,
@@ -6,9 +7,10 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  BaseEntity
+  BaseEntity,
 } from 'typeorm';
 
 @Entity({
@@ -86,4 +88,8 @@ export class User extends BaseEntity {
     },
   })
   roles?: Role[];
+  name: any;
+
+  @OneToMany(() => Client, (client) => client.user)
+  clients: Client[];
 }

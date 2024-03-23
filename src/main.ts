@@ -9,8 +9,12 @@ import {
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter()
+    new FastifyAdapter(),
   );
+
+  // Enable CORS using Fastify's built-in plugin
+  app.enableCors();
+
   const configService = app.get(ConfigService);
   const port = configService.get('app.port');
   await app.listen(port);
