@@ -8,6 +8,8 @@ import { User } from './entities/user.entity';
 import { Role } from '../auth/entities/role.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Repository } from 'typeorm';
+import { PaginationDto } from './dto/pagination.dto';
+import { SearchFilterDto } from './dto/search-filter.dto';
 
 @Injectable()
 export class UserService {
@@ -137,7 +139,26 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return { ...user, password: undefined };    
+    const permissions = await this.getUserPermissions(user.id);
+    // return user withouth password
+    return { ...user, password: undefined, permissions };
   }
+
+  async getUsers(paginationDto: PaginationDto, searchFilterDto: SearchFilterDto) {
+    const { page, limit } = paginationDto;
+    const { search } = searchFilterDto;
+    const [users, total] = await this.userRepository.findAndCount({
+      where: [
+        { username: search },
+        { email: search },
+        { fullName: search },
+        { phoneNumber: search }
+      ],
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+    return { users, total };
+  }
+
 }
 
